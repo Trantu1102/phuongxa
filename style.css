@@ -1,0 +1,484 @@
+.container {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /* Thay đổi từ row sang column */
+    align-items: center;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.map-container {
+    width: 100%;
+    position: relative;
+    margin: 0 auto;
+}
+
+.map-container img,
+#mapCanvas {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.map-container img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+#mapCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+}
+
+#vietnam-map {
+    width: 100%;
+    height: 100%;
+}
+
+.tooltip-box {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: none;
+    width: 400px;
+    max-width: 90vw;
+    z-index: 1000;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.tooltip-box.active {
+    display: block !important;
+}
+
+.tooltip-box h2 {
+    color: #1a73e8;
+    margin: 0 0 15px 0;
+    font-size: 1.5em;
+    border-bottom: 2px solid #1a73e8;
+    padding-bottom: 8px;
+}
+
+.tooltip-box .current-wards {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 6px;
+    margin-bottom: 15px;
+}
+
+.tooltip-box .future-wards {
+    background: #e8f0fe;
+    padding: 20px;
+    border-radius: 6px;
+    border: 2px solid #1a73e8;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    /* Khoảng cách đều giữa các phần tử con */
+}
+
+.tooltip-box .future-wards h3 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    /* Khoảng cách đều giữa các thành phần trong h3 */
+    flex-wrap: wrap;
+    margin: 0;
+    /* Bỏ margin mặc định */
+}
+
+.tooltip-box h3 {
+    font-size: 0.9em;
+    color: #5f6368;
+    margin: 0 0 8px 0;
+}
+
+.tooltip-box .ward-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a73e8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    margin: 0;
+    /* Bỏ margin mặc định */
+}
+
+.tooltip-box .ward-count.highlight {
+    background: #1a73e8;
+    font-weight: 600;
+}
+
+.tooltip-box .ward-list {
+    margin: 0;
+    font-size: 0.9em;
+    line-height: 1.4;
+    color: #202124;
+}
+
+.tooltip-box .ward-list.highlight {
+    margin: 0;
+    /* Bỏ margin mặc định */
+    padding: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    /* Khoảng cách đều giữa các phường */
+}
+
+.tooltip-box .highlight {
+    color: #1a73e8;
+    font-weight: 600;
+}
+
+.tooltip-box .reduction-badge {
+    margin: 0;
+    /* Bỏ margin mặc định */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #fbbc04;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.wards-content {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.wards-content h4 {
+    color: #2196F3;
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.current-wards-content {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
+    transition: all 0.3s ease;
+}
+
+.current-wards-content h4 {
+    color: #FF9800;
+    /* Màu cam cho title phường hiện tại */
+    margin: 0 0 10px 0;
+    font-size: 16px;
+}
+
+.ward-list {
+    color: #2196F3;
+    line-height: 1.5;
+    text-align: left;
+}
+
+.ward-list span {
+    display: inline;
+}
+
+.ward-list span:not(:last-child):after {
+    content: ", ";
+}
+
+.wards-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0;
+    font-size: 14px;
+    /* Giảm kích thước chữ */
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 40px;
+    /* Giảm từ 60px xuống 40px */
+    height: 20px;
+    /* Giảm từ 24px xuống 20px */
+    margin-left: 8px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 20px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    /* Giảm từ 16px xuống 14px */
+    width: 14px;
+    /* Giảm từ 16px xuống 14px */
+    left: 3px;
+    /* Điều chỉnh từ 4px xuống 3px */
+    bottom: 3px;
+    /* Điều chỉnh từ 4px xuống 3px */
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked+.slider {
+    background-color: #2196F3;
+}
+
+input:checked+.slider:before {
+    transform: translateX(20px);
+    /* Điều chỉnh từ 36px xuống 20px */
+}
+
+.instruction-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff5f0;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.instruction-banner img {
+    width: 40px;
+    height: auto;
+    margin-left: 10px;
+}
+
+.instruction-banner p {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 16px;
+    color: #333;
+}
+
+.explanation-text {
+    width: 100%;
+    text-align: left;
+    margin-bottom: 30px;
+    font-family: 'Segoe UI', sans-serif;
+    line-height: 1.6;
+    color: #333;
+}
+
+.explanation-text p {
+    margin: 8px 0;
+    font-size: 20px;
+}
+
+.map-instruction {
+    background-color: #fff5f0;
+    padding: 8px 15px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    white-space: nowrap;
+}
+
+.map-instruction img {
+    width: 20px;
+    height: auto;
+}
+
+.map-instruction p {
+    margin: 0;
+    font-size: 14px;
+    color: #333;
+}
+
+.article-header {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    padding: 0 20px;
+}
+
+.article-header .title {
+    font-family: 'inherit', serif;
+    font-size: 48px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.article-header .sapo {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 30px;
+    color: #666;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.sapo-image {
+    width: 100%;
+    max-width: 1000px;
+    margin: 20px auto;
+}
+
+.sapo-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 1px;
+}
+
+/* Make sure map areas are clickable */
+area {
+    cursor: pointer;
+}
+
+/* Highlight khu vực được click */
+.highlighted-area {
+    fill: rgba(255, 152, 0, 0.4);
+    /* Màu cam với độ trong suốt 60% */
+    stroke: #ff0000;
+    /* Viền đỏ */
+    stroke-width: 2px;
+}
+
+/* Media queries cho điện thoại */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+
+    .tooltip-box {
+        width: 85vw;
+        /* Giảm xuống để phù hợp với màn hình điện thoại */
+        min-width: 150px;
+        max-width: 300px;
+        font-size: 14px;
+        padding: 8px;
+        max-height: 60vh;
+    }
+
+    .tooltip-box h2 {
+        font-size: 16px;
+        margin-bottom: 10px;
+    }
+
+    .tooltip-box h3 {
+        font-size: 14px;
+        margin: 8px 0;
+    }
+
+    .tooltip-box p {
+        margin: 5px 0;
+        font-size: 13px;
+    }
+
+    .tooltip-box hr {
+        margin: 5px 0;
+    }
+
+    .tooltip-box .highlight {
+        font-size: 13px;
+    }
+
+    .instruction-banner {
+        padding: 8px;
+        margin-bottom: 15px;
+    }
+
+    .instruction-banner img {
+        width: 24px;
+    }
+
+    .instruction-banner p {
+        font-size: 14px;
+    }
+
+    .explanation-text {
+        margin-bottom: 20px;
+        padding: 0 15px;
+    }
+
+    .explanation-text p {
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .map-instruction {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .map-instruction img {
+        width: 16px;
+    }
+
+    .article-header .title {
+        font-size: 20px;
+    }
+
+    .article-header .sapo {
+        font-size: 14px;
+    }
+
+    .sapo-image {
+        margin: 15px auto;
+    }
+}
+
+/* Đảm bảo tooltip luôn ở giữa và hiển thị đầy đủ */
+@media screen and (max-height: 600px) {
+    .tooltip-box {
+        max-height: 90vh;
+        top: 5vh;
+        transform: translate(-50%, 0);
+    }
+}
+
+/* Media queries cho điện thoại nhỏ hơn */
+@media screen and (max-width: 375px) {
+    .tooltip-box {
+        width: 90vw;
+        min-width: 120px;
+        max-width: 250px;
+        font-size: 12px;
+        padding: 6px;
+    }
+}
