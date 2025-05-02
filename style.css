@@ -10,11 +10,9 @@
 }
 
 .map-container {
-    position: relative;
     width: 100%;
-    max-width: 1000px;
+    position: relative;
     margin: 0 auto;
-    user-select: none;
 }
 
 .map-container img,
@@ -60,10 +58,6 @@
     z-index: 1000;
     max-height: 80vh;
     overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    /* Thêm scroll mượt cho iOS */
-    touch-action: pan-y;
-    /* Cho phép scroll dọc trên mobile */
 }
 
 .tooltip-box.active {
@@ -374,7 +368,6 @@ input:checked+.slider:before {
 /* Make sure map areas are clickable */
 area {
     cursor: pointer;
-    outline: none;
 }
 
 /* Highlight khu vực được click */
@@ -393,46 +386,43 @@ area {
     }
 
     .tooltip-box {
-        width: 90vw;
-        height: auto;
-        max-height: 70vh;
-        padding: 15px;
+        width: 85vw;
+        /* Giảm xuống để phù hợp với màn hình điện thoại */
+        min-width: 150px;
+        max-width: 300px;
         font-size: 14px;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        position: fixed;
-    }
-
-    .wards-content,
-    .current-wards-content {
-        touch-action: pan-y;
+        padding: 8px;
+        max-height: 60vh;
+        position: fixed !important;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 15px;
+        z-index: 1000;
         -webkit-overflow-scrolling: touch;
     }
 
-    .ward-list {
-        padding: 0 5px;
+    .tooltip-box h2 {
+        font-size: 16px;
+        margin-bottom: 10px;
     }
 
-    /* Tăng kích thước của switch để dễ bấm trên mobile */
-    .switch {
-        width: 46px;
-        height: 24px;
+    .tooltip-box h3 {
+        font-size: 14px;
+        margin: 8px 0;
     }
 
-    .slider:before {
-        height: 18px;
-        width: 18px;
+    .tooltip-box p {
+        margin: 5px 0;
+        font-size: 13px;
     }
 
-    input:checked+.slider:before {
-        transform: translateX(22px);
+    .tooltip-box hr {
+        margin: 5px 0;
     }
 
-    /* Tăng khoảng cách cho dễ bấm */
-    .wards-toggle {
-        padding: 10px 0;
-        margin: 15px 0;
+    .tooltip-box .highlight {
+        font-size: 13px;
     }
 
     .instruction-banner {
@@ -478,6 +468,17 @@ area {
     .sapo-image {
         margin: 15px auto;
     }
+
+    .ward-list {
+        max-height: 50vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Ngăn scroll background khi tooltip hiển thị */
+    body.tooltip-open {
+        overflow: hidden;
+    }
 }
 
 /* Đảm bảo tooltip luôn ở giữa và hiển thị đầy đủ */
@@ -497,38 +498,5 @@ area {
         max-width: 250px;
         font-size: 12px;
         padding: 6px;
-    }
-}
-
-/* Media queries for devices with coarse pointer and no hover */
-@media (hover: none) and (pointer: coarse) {
-    .map-container {
-        touch-action: manipulation;
-    }
-
-    #mapCanvas {
-        touch-action: none;
-    }
-
-    .tooltip-box {
-        position: fixed !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        width: 90vw;
-        max-width: 400px;
-        max-height: 80vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        z-index: 1000;
-        padding: 15px;
-        margin: 0;
-        touch-action: pan-y;
-    }
-
-    /* Tăng vùng touch target */
-    area {
-        padding: 0;
-        /* Bỏ padding để tránh ảnh hưởng đến tính toán tọa độ */
     }
 }
