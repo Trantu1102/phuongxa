@@ -174,6 +174,7 @@ function initMap(provinces) {
     });
 }
 
+// Sửa lại hàm showTooltip
 function showTooltip(district) {
     const tooltip = document.querySelector('.tooltip-box');
     const isDistrict = district.name.startsWith('Quận');
@@ -203,15 +204,41 @@ function showTooltip(district) {
     
     tooltip.innerHTML = content;
 
+    // Thêm xử lý cho mobile
     const wardsSwitch = tooltip.querySelector('.wards-switch');
     const currentWardsContent = tooltip.querySelector('.current-wards-content');
     
-    wardsSwitch.addEventListener('change', function() {
+    // Xóa event listener cũ nếu có
+    wardsSwitch.removeEventListener('change', handleSwitchChange);
+    
+    // Thêm event listener mới
+    function handleSwitchChange() {
         currentWardsContent.style.display = this.checked ? 'block' : 'none';
-    });
+        // Cập nhật lại vị trí tooltip sau khi thay đổi nội dung
+        setTimeout(() => {
+            tooltip.style.top = '50%';
+            tooltip.style.left = '50%';
+            tooltip.style.transform = 'translate(-50%, -50%)';
+        }, 0);
+    }
+    
+    wardsSwitch.addEventListener('change', handleSwitchChange);
+
+    // Ngăn chặn việc đóng tooltip khi scroll trong tooltip
+    tooltip.addEventListener('touchmove', function(e) {
+        e.stopPropagation();
+    }, { passive: true });
 
     tooltip.style.display = 'block';
 }
+
+// Thêm xử lý cho touch events
+document.addEventListener('touchstart', function(e) {
+    const tooltip = document.querySelector('.tooltip-box');
+    if (tooltip.style.display === 'block' && !tooltip.contains(e.target) && !e.target.closest('area')) {
+        tooltip.style.display = 'none';
+    }
+}, { passive: true });
 
 function setupEventListeners() {
     document.querySelectorAll('area').forEach((area, index) => {
