@@ -88,45 +88,105 @@ function initMap(provinces) {
     const canvas = document.getElementById('mapCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Đợi hình ảnh load xong
-    mapImage.onload = function() {
-        updateCanvasSize();
-    };
-
-    // Cập nhật kích thước canvas và scale tọa độ
-    function updateCanvasSize() {
-        const rect = mapImage.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        
-        // Lưu tỷ lệ scale để điều chỉnh tọa độ
-        canvas.scaleX = rect.width / mapImage.naturalWidth;
-        canvas.scaleY = rect.height / mapImage.naturalHeight;
+    function isPointInPolygon(point, polygon) {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 2; i < polygon.length; i += 2) {
+            const xi = polygon[i], yi = polygon[i + 1];
+            const xj = polygon[j], yj = polygon[j + 1];
+            
+            const intersect = ((yi > point.y) !== (yj > point.y))
+                && (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+            
+            j = i;
+        }
+        return inside;
     }
 
-    // Cập nhật khi resize window
-    window.addEventListener('resize', updateCanvasSize);
-    updateCanvasSize();
+    function createAreas() {
+        // Clear existing areas
+        while (map.firstChild) {
+            map.removeChild(map.firstChild);
+        }
 
-    function scaleCoords(coords) {
-        const coordsArray = coords.split(',').map(Number);
-        const scaledCoords = coordsArray.map((coord, index) => {
-            return index % 2 === 0 
-                ? coord * canvas.scaleX 
-                : coord * canvas.scaleY;
+        provinces.hanoi_districts.forEach(district => {
+            if (!district.coords) return;
+
+            const area = document.createElement('area');
+            area.shape = 'poly';
+            area.coords = district.coords;
+            area.href = '#';
+            area.dataset.id = district.id;
+            area.setAttribute('data-original-coords', district.coords);
+
+            const coordsArray = district.coords.split(',').map(Number);
+            area.dataset.coords = JSON.stringify(coordsArray);
+
+            map.appendChild(area);
         });
-        return scaledCoords;
+
+        // Add click handler to map container
+        const mapContainer = document.querySelector('.map-container');
+        mapContainer.addEventListener('click', handleMapClick);
+        mapContainer.addEventListener('touchstart', handleMapClick, { passive: false });
+    }
+
+    function handleMapClick(e) {
+        e.preventDefault();
+        const rect = mapImage.getBoundingClientRect();
+        const scaleX = mapImage.naturalWidth / rect.width;
+        const scaleY = mapImage.naturalHeight / rect.height;
+
+        const point = {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
+        };
+
+        // For touch events
+        if (e.touches && e.touches[0]) {
+            point.x = (e.touches[0].clientX - rect.left) * scaleX;
+            point.y = (e.touches[0].clientY - rect.top) * scaleY;
+        }
+
+        let clickedArea = null;
+        document.querySelectorAll('area').forEach(area => {
+            const coords = JSON.parse(area.dataset.coords);
+            if (isPointInPolygon(point, coords)) {
+                clickedArea = area;
+            }
+        });
+
+        if (clickedArea) {
+            // Clear previous highlights
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            document.querySelectorAll('area[data-selected="true"]').forEach(a => {
+                a.removeAttribute('data-selected');
+            });
+
+            // Highlight new area
+            clickedArea.setAttribute('data-selected', 'true');
+            highlightArea(clickedArea.coords);
+
+            const district = provinces.hanoi_districts.find(d => 
+                d.id === parseInt(clickedArea.dataset.id));
+            if (district) {
+                showTooltip(district);
+            }
+        }
     }
 
     function highlightArea(coords) {
+        const coordsArray = coords.split(',').map(Number);
+        const rect = mapImage.getBoundingClientRect();
+        const scaleX = rect.width / mapImage.naturalWidth;
+        const scaleY = rect.height / mapImage.naturalHeight;
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.beginPath();
+        ctx.moveTo(coordsArray[0] * scaleX, coordsArray[1] * scaleY);
         
-        const scaledCoords = scaleCoords(coords);
-        ctx.moveTo(scaledCoords[0], scaledCoords[1]);
-        
-        for(let i = 2; i < scaledCoords.length; i += 2) {
-            ctx.lineTo(scaledCoords[i], scaledCoords[i + 1]);
+        for (let i = 2; i < coordsArray.length; i += 2) {
+            ctx.lineTo(coordsArray[i] * scaleX, coordsArray[i + 1] * scaleY);
         }
         
         ctx.closePath();
@@ -137,40 +197,29 @@ function initMap(provinces) {
         ctx.stroke();
     }
 
-    provinces.hanoi_districts.forEach(district => {
-        if (!district.coords) return;
+    // Initial setup
+    if (mapImage.complete) {
+        createAreas();
+        updateCanvasSize();
+    } else {
+        mapImage.onload = function() {
+            createAreas();
+            updateCanvasSize();
+        };
+    }
 
-        const area = document.createElement('area');
-        area.shape = 'poly';
-        area.coords = district.coords;
-        area.href = '#';
-        area.dataset.id = district.id;
-        map.appendChild(area);
-
-        // Thêm event listener cho click
-        area.addEventListener('click', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // Clear previous highlight
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            highlightArea(this.coords);
-            
-            const district = provinces.hanoi_districts.find(d => d.id === parseInt(this.dataset.id));
-            if (district) {
-                showTooltip(district);
+    // Handle window resize
+    let resizeTimeout;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(function() {
+            updateCanvasSize();
+            createAreas();
+            const selectedArea = document.querySelector('area[data-selected="true"]');
+            if (selectedArea) {
+                highlightArea(selectedArea.coords);
             }
-        });
-    });
-
-    // Clear highlight và đóng tooltip khi click outside
-    document.addEventListener('click', function(e) {
-        const tooltip = document.querySelector('.tooltip-box');
-        const area = e.target.closest('area');
-        if (!tooltip.contains(e.target) && !area) {
-            tooltip.style.display = 'none';
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-        }
+        }, 250);
     });
 }
 
