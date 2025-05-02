@@ -496,3 +496,37 @@ area {
         padding: 6px;
     }
 }
+
+/* Media queries for devices with coarse pointer and no hover */
+@media (hover: none) and (pointer: coarse) {
+    .map-container {
+        touch-action: none;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
+    #mapCanvas {
+        touch-action: none;
+    }
+
+    .tooltip-box {
+        position: fixed;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: 90vw;
+        max-width: 400px;
+        max-height: 80vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        z-index: 1000;
+        padding: 15px;
+        margin: 0;
+    }
+
+    /* Tăng kích thước vùng có thể chạm */
+    area {
+        padding: 15px;
+    }
+}

@@ -127,27 +127,46 @@ function initMap(provinces) {
 
         // Add click handler to map container
         const mapContainer = document.querySelector('.map-container');
+        
+        // Xóa event listeners cũ nếu có
+        mapContainer.removeEventListener('click', handleMapClick);
+        mapContainer.removeEventListener('touchstart', handleMapClick);
+        
+        // Thêm event listeners mới
         mapContainer.addEventListener('click', handleMapClick);
         mapContainer.addEventListener('touchstart', handleMapClick, { passive: false });
+        
+        // Ngăn chặn zoom khi double tap trên mobile
+        mapContainer.addEventListener('touchend', (e) => {
+            e.preventDefault();
+        }, { passive: false });
     }
 
     function handleMapClick(e) {
         e.preventDefault();
         const rect = mapImage.getBoundingClientRect();
+        
+        // Lấy tọa độ điểm chạm cho cả click và touch
+        let clientX, clientY;
+        if (e.touches && e.touches[0]) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+
+        // Tính toán tỷ lệ scale
         const scaleX = mapImage.naturalWidth / rect.width;
         const scaleY = mapImage.naturalHeight / rect.height;
 
+        // Tính toán tọa độ điểm trong hệ tọa độ của ảnh
         const point = {
-            x: (e.clientX - rect.left) * scaleX,
-            y: (e.clientY - rect.top) * scaleY
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
         };
 
-        // For touch events
-        if (e.touches && e.touches[0]) {
-            point.x = (e.touches[0].clientX - rect.left) * scaleX;
-            point.y = (e.touches[0].clientY - rect.top) * scaleY;
-        }
-
+        // Tìm vùng được chọn
         let clickedArea = null;
         document.querySelectorAll('area').forEach(area => {
             const coords = JSON.parse(area.dataset.coords);
