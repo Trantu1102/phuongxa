@@ -10,9 +10,11 @@
 }
 
 .map-container {
-    width: 100%;
     position: relative;
+    width: 100%;
+    max-width: 1000px;
     margin: 0 auto;
+    user-select: none;
 }
 
 .map-container img,
@@ -372,6 +374,7 @@ input:checked+.slider:before {
 /* Make sure map areas are clickable */
 area {
     cursor: pointer;
+    outline: none;
 }
 
 /* Highlight khu vực được click */
@@ -500,10 +503,7 @@ area {
 /* Media queries for devices with coarse pointer and no hover */
 @media (hover: none) and (pointer: coarse) {
     .map-container {
-        touch-action: none;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        user-select: none;
+        touch-action: manipulation;
     }
 
     #mapCanvas {
@@ -511,7 +511,7 @@ area {
     }
 
     .tooltip-box {
-        position: fixed;
+        position: fixed !important;
         top: 50% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
@@ -523,10 +523,12 @@ area {
         z-index: 1000;
         padding: 15px;
         margin: 0;
+        touch-action: pan-y;
     }
 
-    /* Tăng kích thước vùng có thể chạm */
+    /* Tăng vùng touch target */
     area {
-        padding: 15px;
+        padding: 0;
+        /* Bỏ padding để tránh ảnh hưởng đến tính toán tọa độ */
     }
 }
